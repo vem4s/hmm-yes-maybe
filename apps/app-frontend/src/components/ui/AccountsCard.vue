@@ -35,7 +35,9 @@
       </div>
       <div v-else class="logged-out account">
         <h4>Not signed in</h4>
-        <Button v-tooltip="'Log in'" icon-only color="primary" @click="login()">
+        <input type="text" placeholder="Username" v-model="offlineUsername" />
+        <Button v-tooltip="'Log in'" icon-only color="primary"
+            @click="offlineLogin(offlineUsername)">
           <LogInIcon />
         </Button>
       </div>
@@ -67,6 +69,7 @@ import {
   remove_user,
   set_default_user,
   login as login_flow,
+  offline_login,
   get_default_user,
 } from '@/helpers/auth'
 import { handleError } from '@/store/state.js'
@@ -86,6 +89,7 @@ const emit = defineEmits(['change'])
 
 const accounts = ref({})
 const defaultUser = ref()
+const offlineUsername = ref('')
 
 async function refreshValues() {
   defaultUser.value = await get_default_user().catch(handleError)
@@ -112,6 +116,21 @@ async function setAccount(account) {
 
 async function login() {
   const loggedIn = await login_flow().catch(handleSevereError)
+
+  if (loggedIn) {
+    await setAccount(loggedIn)
+    await refreshValues()
+  }
+
+  mixpanel_track('AccountLogIn')
+}
+
+async function offlineLogin(username) {
+  if (username.length == 0) {
+    return
+  }
+
+  const loggedIn = await offline_login(username).catch(handleSevereError)
 
   if (loggedIn) {
     await setAccount(loggedIn)
