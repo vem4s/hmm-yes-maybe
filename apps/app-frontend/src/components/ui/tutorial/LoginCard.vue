@@ -69,6 +69,7 @@ async function login() {
       </div>
     </Card>
   </div>
+  <div class="offline-hint">Press Finish if you want to use offline account instead</div>
 </template>
 
 <style scoped lang="scss">
@@ -136,5 +137,10 @@ async function login() {
   flex-direction: column;
   gap: var(--gap-sm);
   align-items: center;
+}
+
+.offline-hint {
+  color: var(--color-warning-text);
+  font-weight: var(--font-weight-bold);
 }
 </style>
