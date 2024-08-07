@@ -16,6 +16,29 @@
       "
     />
   </div>
+
+  <Modal ref="chooseAccountTypeModal" header="Choose new account type">
+    <div class="choose-account-modal">
+      <div class="account-types">
+        <Button @click="login()">
+          <SSOMicrosoftIcon />Microsoft
+        </Button>
+        <Button @click="$refs.chooseAccountTypeModal.hide(); $refs.chooseOfflineUsernameModal.show()">
+          <ClientIcon />Offline
+        </Button>
+      </div>
+    </div>
+  </Modal>
+
+  <Modal ref="chooseOfflineUsernameModal" header="Choose username for your offline account">
+    <div class="choose-offline-username-modal">
+      <input type="text" placeholder="Username" v-model="offlineUsername" />
+      <Button icon-only color="primary" @click="offlineLogin(offlineUsername)">
+        <LogInIcon />
+      </Button>
+    </div>
+  </Modal>
+
   <transition name="fade">
     <Card
       v-if="showCard || mode === 'isolated'"
@@ -35,9 +58,8 @@
       </div>
       <div v-else class="logged-out account">
         <h4>Not signed in</h4>
-        <input type="text" placeholder="Username" v-model="offlineUsername" />
         <Button v-tooltip="'Log in'" icon-only color="primary"
-            @click="offlineLogin(offlineUsername)">
+            @click="$refs.chooseAccountTypeModal.show()">
           <LogInIcon />
         </Button>
       </div>
@@ -52,7 +74,7 @@
           </Button>
         </div>
       </div>
-      <Button v-if="accounts.length > 0" @click="login()">
+      <Button v-if="accounts.length > 0" @click="$refs.chooseAccountTypeModal.show()">
         <PlusIcon />
         Add account
       </Button>
@@ -61,8 +83,8 @@
 </template>
 
 <script setup>
-import { PlusIcon, TrashIcon, LogInIcon } from '@modrinth/assets'
-import { Avatar, Button, Card } from '@modrinth/ui'
+import { PlusIcon, TrashIcon, LogInIcon, SSOMicrosoftIcon, ClientIcon } from '@modrinth/assets'
+import { Avatar, Button, Card, Modal } from '@modrinth/ui'
 import { ref, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
 import {
   users,
@@ -86,6 +108,9 @@ defineProps({
 })
 
 const emit = defineEmits(['change'])
+
+const chooseAccountTypeModal = ref(null)
+const chooseOfflineUsernameModal = ref(null)
 
 const accounts = ref({})
 const defaultUser = ref()
@@ -130,6 +155,7 @@ async function offlineLogin(username) {
     return
   }
 
+  chooseOfflineUsernameModal.value.hide()
   const loggedIn = await offline_login(username).catch(handleSevereError)
 
   if (loggedIn) {
@@ -406,5 +432,28 @@ onUnmounted(() => {
     color: var(--color-contrast);
     padding: 0.5rem 1rem;
   }
+}
+
+.choose-account-modal {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 0.1rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.account-types {
+  display: flex;
+  gap: 1rem;
+}
+
+.choose-offline-username-modal {
+  display: flex;
+  padding: 2rem;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>
